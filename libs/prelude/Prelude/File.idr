@@ -17,6 +17,8 @@ import IO
 
 %access public export
 
+%include C "sys/stat.h"
+
 ||| A file handle
 data File : Type where
   FHandle : (p : Ptr) -> File
@@ -27,7 +29,7 @@ data File : Type where
 ||| An error from a file operation
 -- This is built in idris_mkFileError() in rts/idris_stdfgn.c. Make sure
 -- the values correspond!
-               
+
 data FileError = GenericFileError Int -- errno
                | FileReadError
                | FileWriteError
@@ -142,12 +144,12 @@ do_getFileSize h = foreign FFI_C "fileSize" (Ptr -> IO Int) h
 
 ||| Return the size of a File
 ||| Returns an error if the File is not an ordinary file (e.g. a directory)
-||| Also note that this currently returns an Int, which may overflow if the 
+||| Also note that this currently returns an Int, which may overflow if the
 ||| file is very big
 export
 fileSize : File -> IO (Either FileError Int)
 fileSize (FHandle h) = do s <- do_getFileSize h
-                          if (s < 0) 
+                          if (s < 0)
                              then do err <- getFileError
                                      pure (Left err)
                              else pure (Right s)
@@ -285,3 +287,21 @@ writeFile fn contents = do
      Right () <- fPutStr h contents        | Left err => pure (Left err)
      closeFile h
      pure (Right ())
+
+||| Make a directory.
+|||
+||| ```idris example
+||| makeDirectory "some/directory" 0b755
+||| ```
+||| See the GNU Manual for more information on Permission Bits:
+||| https://www.gnu.org/software/libc/manual/html_node/Permission-Bits.html#Permission-Bits
+|||
+||| @ path The path to the new directory.
+||| @ mode File permissions for the new directory.
+export
+makeDirectory : (path : String) -> (mode : Int) -> IO (Either FileError ())
+makeDirectory path mode = do
+  res <- foreign FFI_C "mkdir" (String -> Int -> IO Int) path mode
+  if res > 0
+    then pure (Left !getFileError)
+    else pure (Right ())
