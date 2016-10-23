@@ -138,6 +138,9 @@ prim_fwrite : Ptr -> String -> IO' l Int
 prim_fwrite h s
    = MkIO (\w => prim_io_pure (prim__writeFile (world w) h s))
 
+prim_mkdir : String -> Int -> IO' l Int
+prim_mkdir p m = MkIO (\w => prim_io_pure (prim__mkdir (world w) p m))
+
 --------- The C FFI
 namespace FFI_C
   public export

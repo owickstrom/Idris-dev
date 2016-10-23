@@ -179,6 +179,8 @@ primitives =
      (1, LReadStr) total, -- total is okay, because we have 'WorldType'
    Prim (sUN "prim__writeString") (ty [WorldType,StrType] (AType (ATInt ITNative))) 2 (p_cantreduce)
      (2, LWriteStr) total,
+   Prim (sUN "prim__mkdir") (ty [WorldType,StrType,(AType (ATInt ITNative))] (AType (ATInt ITNative))) 2 (p_cantreduce)
+     (2, LWriteStr) total,
     Prim (sUN "prim__systemInfo") (ty [AType (ATInt ITNative)] StrType) 1 (p_cantreduce)
         (1, LSystemInfo) total
   ] ++ concatMap intOps [ITFixed IT8, ITFixed IT16, ITFixed IT32, ITFixed IT64, ITBig, ITNative, ITChar]

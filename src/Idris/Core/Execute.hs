@@ -35,6 +35,7 @@ import Data.Time.Clock.POSIX (getPOSIXTime)
 import Data.Traversable (forM)
 import Debug.Trace
 import System.IO
+import System.Directory
 
 #ifdef IDRIS_FFI
 import Foreign.C.String
@@ -434,6 +435,7 @@ prf = sUN "prim__readFile"
 pwf = sUN "prim__writeFile"
 prs = sUN "prim__readString"
 pws = sUN "prim__writeString"
+pmd = sUN "prim__mkdir"
 pbm = sUN "prim__believe_me"
 pstdin = sUN "prim__stdin"
 pstdout = sUN "prim__stdout"
@@ -475,6 +477,13 @@ getOp fn (_ : EHandle h : xs)
 getOp fn (_ : arg : xs)
     | fn == prf =
               Just $ (execFail (Msg "Can't use prim__readFile on a raw pointer in the executor."), xs)
+
+getOp fn (_ : EConstant (Str p) : EConstant (I _) : xs)
+  | fn == pmd =
+    Just (do execIO $ createDirectory p
+             return (EConstant (I 0))
+         , xs)
+
 getOp n args = do (arity, prim) <- getPrim n primitives
                   if (length args >= arity)
                      then do res <- applyPrim prim (take arity args)
