@@ -1,0 +1,7 @@
+package generate
+
+pkgs = effects
+sourcedir = src
+
+main = Cmd.Generate
+executable = "idris-generate"
